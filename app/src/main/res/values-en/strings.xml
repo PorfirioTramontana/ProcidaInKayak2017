@@ -1,0 +1,15 @@
+<resources>
+    <string name="app_name">Procida In Kayak</string>
+    <string name="title_activity_maps">Procida In Kayak</string>
+    <string name="title_activity_setting">Configure</string>
+    <string name="walking">Walking</string>
+    <string name="attendi">Wait ...</string>
+    <string name="percorso">I am searching for the path ...</string>
+    <string name="nontrovato">Path not found</string>
+    <string name="cerca">Search</string>
+    <string name="direction">Directions</string>
+    <string name="miaPosizione">My position</string>
+    <string name="LocationChanged">Location Changed</string>
+    <string name="annulla">Cancel</string>
+    <string name="noConnection">No Internet Connection</string>
+</resources>
