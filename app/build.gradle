@@ -1,14 +1,14 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 25
-    buildToolsVersion '26.0.2'
+    compileSdkVersion 27
+    buildToolsVersion '27.0.3'
     defaultConfig {
         applicationId 'com.porfirio.procidainkayak'
-        minSdkVersion 16
-        targetSdkVersion 25
-        versionCode 6
-        versionName "1.0Alpha"
+        minSdkVersion 18
+        targetSdkVersion 27
+        versionCode 7
+        versionName "1.1Alpha"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         multiDexEnabled true
     }
@@ -23,22 +23,14 @@ android {
 }
 
 dependencies {
-    compile fileTree(include: ['*.jar'], dir: 'libs')
-
-    compile 'com.android.support:appcompat-v7:25.3.1'
-    compile 'com.google.android.gms:play-services:10.2.6'
-    compile 'com.google.firebase:firebase-messaging:9.6.1'
-    testCompile 'junit:junit:4.12'
-    compile 'javax.annotation:javax.annotation-api:1.2'
-    compile 'com.google.android.gms:play-services-analytics:10.2.6'
-}
-
-
-
-dependencies {
-    compile 'com.android.support.constraint:constraint-layout:+'
-    compile 'com.android.support:design:25.+'
-}
-dependencies {
-    compile 'com.android.support.constraint:constraint-layout:+'
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
+    implementation 'com.google.android.gms:play-services-maps:15.0.1'
+    implementation 'com.android.support:appcompat-v7:27.1.1'
+    implementation 'com.google.firebase:firebase-messaging:17.1.0'
+    testImplementation 'junit:junit:4.12'
+    implementation 'javax.annotation:javax.annotation-api:1.2'
+    implementation 'com.google.android.gms:play-services-analytics:16.0.1'
+    implementation 'com.android.support.constraint:constraint-layout:1.1.2'
+    implementation 'com.android.support:design:27.1.1'
+    implementation 'com.android.support.constraint:constraint-layout:1.1.2'
 }

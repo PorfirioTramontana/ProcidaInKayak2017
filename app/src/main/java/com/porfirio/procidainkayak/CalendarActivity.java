@@ -1,7 +1,7 @@
 package com.porfirio.procidainkayak;
 
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.webkit.WebView;
 
 
@@ -22,7 +22,7 @@ public class CalendarActivity extends AppCompatActivity {
         wv.getSettings().setBuiltInZoomControls(true);
         wv.getSettings().setLoadWithOverviewMode(true);
         wv.getSettings().setUseWideViewPort(true);
-        String data = "<body>" + "<img src=\"calendar2017.jpg\"/></body>";
+        String data = "<body>" + "<img src=\"calendar2018.jpg\"/></body>";
 
         wv.loadDataWithBaseURL("file:///android_asset/",data , "text/html", "utf-8",null);
 

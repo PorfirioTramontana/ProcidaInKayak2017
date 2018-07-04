@@ -2,41 +2,25 @@ package com.porfirio.procidainkayak;
 
 
 import android.Manifest;
-import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.location.Location;
+import android.location.LocationListener;
 import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
-import android.util.Log;
 import android.view.View;
-import android.view.inputmethod.InputMethodManager;
-import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import android.app.Application;
-
-import com.google.android.gms.analytics.GoogleAnalytics;
 import com.google.android.gms.analytics.HitBuilders;
 import com.google.android.gms.analytics.Tracker;
-
-/**
- * This is a subclass of {@link Application} used to provide shared objects for this app, such as
- * the {@link Tracker}.
- */
-
-import android.location.LocationListener;
-
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -57,7 +41,12 @@ import Modules.DirectionFinderListener;
 import Modules.Route;
 
 import static android.R.attr.name;
-import static com.google.android.gms.fitness.FitnessActivities.WALKING;
+
+/**
+ * This is a subclass of {@link Application} used to provide shared objects for this app, such as
+ * the {@link Tracker}.
+ */
+//import static com.google.android.gms.fitness.FitnessActivities.WALKING;
 
 
 public class MapsActivity extends FragmentActivity implements
@@ -216,7 +205,7 @@ public class MapsActivity extends FragmentActivity implements
         try {
             if (origin!=null)
                 //if (origin.isEmpty())
-                    new DirectionFinder(this, origin, destination, WALKING, avoid).execute();
+                new DirectionFinder(this, origin, destination, "walking", avoid).execute();
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
         }
