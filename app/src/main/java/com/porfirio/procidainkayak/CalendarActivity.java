@@ -22,7 +22,7 @@ public class CalendarActivity extends AppCompatActivity {
         wv.getSettings().setBuiltInZoomControls(true);
         wv.getSettings().setLoadWithOverviewMode(true);
         wv.getSettings().setUseWideViewPort(true);
-        String data = "<body>" + "<img src=\"calendar2018.jpg\"/></body>";
+        String data = "<body>" + "<img src=\"calendar2019.jpg\"/></body>";
 
         wv.loadDataWithBaseURL("file:///android_asset/",data , "text/html", "utf-8",null);
 
