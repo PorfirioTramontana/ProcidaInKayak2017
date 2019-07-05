@@ -6,8 +6,8 @@ android {
         applicationId 'com.porfirio.procidainkayak'
         minSdkVersion 18
         targetSdkVersion 28
-        versionCode 8
-        versionName "1.1Alpha2019"
+        versionCode 9
+        versionName "1.1_2019"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         multiDexEnabled true
     }
