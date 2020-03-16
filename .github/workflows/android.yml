@@ -1,0 +1,235 @@
+name: Android CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+env:
+  BUILD_TOOLS_VERSION: 29.0.3
+  apiLevel: 29
+  target: default
+  arch: x86
+  CMDLINE_TOOLS_URL: https://dl.google.com/android/repository/commandlinetools-linux-6200805_latest.zip
+  nomeemulatore: test
+
+jobs:
+
+
+  LintTest:
+    runs-on: macos
+    steps:
+
+    - name: checkout
+      uses: actions/checkout@v2
+
+    - name: Autorizzo Gradle
+      run: chmod u+x ./gradlew
+
+    - name: Eseguo Lint Test
+      run: |
+        ./gradlew lint
+    - name: Creo cartella per risultati Lint Test
+      run: |
+        mkdir -p risultatiLintTest
+        cp -R app/build/reports/lint-results.html risultatiLintTest
+        cp -R app/build/reports/lint-results.xml risultatiLintTest
+    - name: Risultati Lint Test
+      uses: actions/upload-artifact@v1
+      with:
+        name: Risultati Lint Test
+        path: risultatiLintTest
+        
+  UnitTest:
+    runs-on: macos
+    steps:
+
+      - name: checkout
+        uses: actions/checkout@v2
+
+      - name: Autorizzo Gradle
+        run: chmod u+x ./gradlew
+
+      - name: Eseguo Lint Test
+        run: |
+          ./gradlew test
+   
+  InstrumentedTest:
+    runs-on: macos
+    steps:
+
+      - name: checkout
+        uses: actions/checkout@v2
+
+      - name: Install SDK
+        run: |
+          echo "Installing new cmdline-tools."
+          mkdir ${ANDROID_HOME}/cmdline-tools
+          curl -fo commandlinetools.zip ${CMDLINE_TOOLS_URL}
+          unzip -q commandlinetools.zip -d ${ANDROID_HOME}/cmdline-tools
+          rm -f commandlinetools.zip
+          export PATH=${ANDROID_HOME}/cmdline-tools/tools:${ANDROID_HOME}/cmdline-tools/tools/bin:${ANDROID_HOME}/platform-tools:$PATH
+          echo "Installing latest build tools, platform tools, and platform."
+          sdkmanager --install 'build-tools;'${BUILD_TOOLS_VERSION} platform-tools 'platforms;android-'${apiLevel} > /dev/null
+          echo "Installing latest emulator"
+          sdkmanager --install emulator > /dev/null
+          echo "Installing system images"
+          sdkmanager --install 'system-images;android-'${apiLevel}';'${target}';'${arch} > /dev/null
+      - name: Create AVD
+        run: |
+          export PATH=${ANDROID_HOME}/tools/bin:$PATH
+          echo "Creating AVD without custom profile."
+          echo no | avdmanager create avd --force -n ${nomeemulatore} --abi ${target}/${arch} --package 'system-images;android-'${apiLevel}';'${target}';'${arch}
+      - name: Launch AVD
+        run: |
+          echo "Launch AVD."
+          ${ANDROID_HOME}/emulator/emulator -avd test -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim &
+      - name: Wait emulator
+        run: |
+          chmod u+x .github/scripts/waitdevice.sh
+          .github/scripts/waitdevice.sh
+      - name: Autorizzo Gradle
+        run: chmod u+x ./gradlew
+
+      - name: Eseguo Instrumented Test
+        run :
+          ./gradlew connectedAndroidTest
+
+      - name: Creo cartella per risultati Instrumented Test
+        run: |
+          mkdir -p risultatiIstruInstrumentedTest
+          cp -R app/build/reports/androidTests/connected/ risultatiIstruInstrumentedTest/reports
+          cp -R app/build/outputs/androidTest-results/connected/ risultatiIstruInstrumentedTest/outputs
+      - name: Risultati Instrumented Test
+        uses: actions/upload-artifact@v1
+        with:
+          name: Risultati Instrumented Test
+          path: risultatiIstruInstrumentedTest
+  
+  MonkeyTest:
+    runs-on: macos
+    steps:
+
+    - name: checkout
+      uses: actions/checkout@v2
+
+    - name: Install SDK
+      run: |
+        echo "Installing new cmdline-tools."
+        mkdir ${ANDROID_HOME}/cmdline-tools
+        curl -fo commandlinetools.zip ${CMDLINE_TOOLS_URL}
+        unzip -q commandlinetools.zip -d ${ANDROID_HOME}/cmdline-tools
+        rm -f commandlinetools.zip
+        export PATH=${ANDROID_HOME}/cmdline-tools/tools:${ANDROID_HOME}/cmdline-tools/tools/bin:${ANDROID_HOME}/platform-tools:$PATH
+        echo "Installing latest build tools, platform tools, and platform."
+        sdkmanager --install 'build-tools;'${BUILD_TOOLS_VERSION} platform-tools 'platforms;android-'${apiLevel} > /dev/null
+        echo "Installing latest emulator"
+        sdkmanager --install emulator > /dev/null
+        echo "Installing system images"
+        sdkmanager --install 'system-images;android-'${apiLevel}';'${target}';'${arch} > /dev/null
+    - name: Create AVD
+      run: |
+        export PATH=${ANDROID_HOME}/tools/bin:$PATH
+        echo "Creating AVD without custom profile."
+        echo no | avdmanager create avd --force -n ${nomeemulatore} --abi ${target}/${arch} --package 'system-images;android-'${apiLevel}';'${target}';'${arch}
+    - name: Launch AVD
+      run: |
+        echo "Launch AVD."
+        ${ANDROID_HOME}/emulator/emulator -avd test -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim &
+    - name: Wait emulator
+      run: |
+        chmod u+x .github/scripts/waitdevice.sh
+        .github/scripts/waitdevice.sh
+    - name: Autorizzo Gradle
+      run: chmod u+x ./gradlew
+
+    - name: Azioni preliminari Monkey Test
+      run: |
+        ./gradlew assembleDebug
+        packagenameloc=$(${ANDROID_HOME}/build-tools/24.0.0/aapt dump badging app/build/outputs/apk/debug/app-debug.apk | grep package:\ name | awk -v FS="'" '/package: name=/{print $2}')
+        echo $packagenameloc
+        echo "::set-env name=packagename::"$packagenameloc""
+        adb -s emulator-5554 install app/build/outputs/apk/debug/app-debug.apk
+    - name: Eseguo Monkey Test
+      run: adb shell monkey -p $packagename -v 100
+
+  FunesDroidTest:
+    runs-on: macos
+    steps:
+
+      - name: checkout
+        uses: actions/checkout@v2
+
+      - name: Installo Python
+        uses: actions/setup-python@v1
+        with:
+          python-version: '3.8' # Version range or exact version of a Python version to use, using SemVer's version range syntax
+          architecture: 'x64' # optional x64 or x86. Defaults to x64 if not specified
+
+      - name: Install SDK
+        run: |
+          echo "Installing new cmdline-tools."
+          mkdir ${ANDROID_HOME}/cmdline-tools
+          curl -fo commandlinetools.zip ${CMDLINE_TOOLS_URL}
+          unzip -q commandlinetools.zip -d ${ANDROID_HOME}/cmdline-tools
+          rm -f commandlinetools.zip
+          export PATH=${ANDROID_HOME}/cmdline-tools/tools:${ANDROID_HOME}/cmdline-tools/tools/bin:${ANDROID_HOME}/platform-tools:$PATH
+          echo "Installing latest build tools, platform tools, and platform."
+          sdkmanager --install 'build-tools;'${BUILD_TOOLS_VERSION} platform-tools 'platforms;android-'${apiLevel} > /dev/null
+          echo "Installing latest emulator"
+          sdkmanager --install emulator > /dev/null
+          echo "Installing system images"
+          sdkmanager --install 'system-images;android-'${apiLevel}';'${target}';'${arch} > /dev/null
+      - name: Autorizzo Gradle
+        run: chmod u+x ./gradlew
+    
+      - name: Creo APK
+        run: ./gradlew assembleDebug
+
+      - name: Operazioni preliminari FunesDroid Test
+        run: |
+          mkdir -p FunesDroid-master/InputAPKs
+          mkdir -p FunesDroid-master/Results
+          mv app/build/outputs/apk/debug/app-debug.apk FunesDroid-master/InputAPKs
+          
+      #python launchexp.py -les [doc|bf|stai] -nevent [n] -wtime [w] -api [a]
+      - name: Eseguo FunesDroid Test
+        run: |
+          echo "Eseguo FunesDroid Test."
+          cd FunesDroid-master/
+          python launchexp.py --les 'doc' --nevent 1 --wtime 1 --apiversion ${apiLevel}
+          
+      - name: Risultati FunesDroid
+        uses: actions/upload-artifact@v1
+        with:
+          name: Risultati FunesDroid
+          path: FunesDroid-master/Results
+
+  FunesDroidTestInvioRichiesta:
+    runs-on: macos
+    steps:
+
+      - name: checkout
+        uses: actions/checkout@v2
+
+      - name: Installo Python
+        uses: actions/setup-python@v1
+        with:
+          python-version: '3.8' # Version range or exact version of a Python version to use, using SemVer's version range syntax
+          architecture: 'x64' # optional x64 or x86. Defaults to x64 if not specified
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests
+          pip install pyOpenSSL
+      - name: Autorizzo Gradle
+        run: chmod u+x ./gradlew
+
+      - name: Eseguo FunesDroid Test Richiesta
+        run: |
+          echo "Costruisco apk."
+          ./gradlew assembleDebug
+          python .github/scripts/richiestapython.py "https://143.225.229.45:443/start" "ciro__napoli@hotmail.it" "app/build/outputs/apk/debug/app-debug.apk" 29 1 1 1 1 1 1 1 1 1 1 1 1 si si si
+
